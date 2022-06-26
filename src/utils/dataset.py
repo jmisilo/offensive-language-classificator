@@ -1,6 +1,7 @@
 import os 
 import pandas as pd
 from torch.utils.data import Dataset
+from torch.utils.data import random_split
 
 class OLID(Dataset):
     def __init__(self, path):
@@ -17,6 +18,26 @@ class OLID(Dataset):
     
     def __len__(self):
         return self.data.shape[0]
+
+def get_dataset(path, split_size=[0.9, 0.05]):
+    """
+        Returns dataset splitted into train, validation and test sets.
+
+        path: path to the dataset
+        split_size: list of floats, representing the size of train, validation and test sets
+    """
+
+    assert len(split_size) == 2, 'split_size must be a list of length 2'
+    assert all([isinstance(item, float) for item in split_size]), 'split_size must be a list of floats'
+    assert sum(split_size) < 1, 'split_size must sum to less than 1'
+
+    dataset = OLID(path)
+
+    train_size = int(split_size[0] * len(dataset))
+    valid_size = int(split_size[1] * len(dataset))
+    test_size = len(dataset) - train_size - valid_size
+
+    return random_split(dataset, [train_size, valid_size, test_size])
 
 # test dataset performance
 if __name__ == '__main__':

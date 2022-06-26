@@ -7,3 +7,4 @@ class Config:
     epochs: int  = 3
     warmump_steps: int = 500
     weight_decay: float = 0.01
+    max_norm: float = 2.0

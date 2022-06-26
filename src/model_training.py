@@ -4,7 +4,7 @@ from transformers import AutoModelForSequenceClassification, get_linear_schedule
 from utils.dataset import get_dataset
 from utils.pipeline import get_loader
 from utils.config import Config
-from utils.training import train_epoch
+from utils.training import train_epoch, valid_epoch
 
 if __name__ == '__main__':
     config = Config()
@@ -32,3 +32,6 @@ if __name__ == '__main__':
 
     for epoch in range(config.epochs):
         train_loss = train_epoch(model, train_loader, optimizer, scaler, scheduler, config, device)
+        valid_loss = valid_epoch(model, valid_loader, device)
+
+        print(f'Epoch {epoch + 1}: train loss - {train_loss:.4f}, validation loss - {valid_loss:.4f}')

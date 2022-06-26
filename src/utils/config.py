@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 @dataclass
 class Config:
-    batch_size: int = 128
-    learning_rate = 2e-5
-    num_train_epochs = 3.0
-    warmump_steps = 500
-    weight_decay = 0.01
+    batch_size: int = 8
+    learning_rate: float = 2e-5
+    epochs: int  = 3
+    warmump_steps: int = 500
+    weight_decay: float = 0.01

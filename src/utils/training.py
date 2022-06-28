@@ -1,6 +1,9 @@
+import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+from .pipeline import decode_tokens
 
 def train_epoch(model, loader, optimizer, scaler, scheduler, config, device):
     losses = []
@@ -35,6 +38,10 @@ def train_epoch(model, loader, optimizer, scaler, scheduler, config, device):
 def valid_epoch(model, loader, device):
     losses = []
 
+    examples = []
+    scores = []
+    labels = []
+
     model.eval()
 
     with torch.no_grad():
@@ -47,4 +54,11 @@ def valid_epoch(model, loader, device):
                 loss = outputs.loss
                 losses.append(loss)
 
-    return torch.stack(losses).mean().item()
+                examples.extend(decode_tokens(inputs))
+                scores.extend(['Offense' if torch.argmax(pred).item() else 'Not offense' for pred in outputs.logits])
+                labels.extend(['Offense' if torch.argmax(target).item() else 'Not offense' for target in targets])
+                
+    logs = pd.DataFrame(np.column_stack([examples, scores, labels]), columns=['Text', 'Predicted', 'Target'])
+    mean_loss = torch.stack(losses).mean().item()
+
+    return mean_loss, logs

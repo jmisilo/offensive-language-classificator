@@ -15,6 +15,9 @@ def text_pipeline(texts):
 
     return tokenized_text['input_ids'], tokenized_text['attention_mask']
 
+def decode_tokens(tokens):
+    return [seq.replace('<s>', '').replace('</s>', '').replace('<pad>', '') for seq in tokenizer.batch_decode(tokens)]
+
 def collate_fn(batch):
     texts, targets = [], []
 

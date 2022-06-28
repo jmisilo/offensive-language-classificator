@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 from .pipeline import decode_tokens
+from sklearn.metrics import precision_score, recall_score, accuracy_score
 
 def train_epoch(model, loader, optimizer, scaler, scheduler, config, device):
     losses = []
@@ -55,10 +56,24 @@ def valid_epoch(model, loader, device):
                 losses.append(loss)
 
                 examples.extend(decode_tokens(inputs))
-                scores.extend(['Offense' if torch.argmax(pred).item() else 'Not offense' for pred in outputs.logits])
-                labels.extend(['Offense' if torch.argmax(target).item() else 'Not offense' for target in targets])
+                scores.extend([torch.argmax(pred).item() for pred in outputs.logits])
+                labels.extend([torch.argmax(target).item() for target in targets])
                 
-    logs = pd.DataFrame(np.column_stack([examples, scores, labels]), columns=['Text', 'Predicted', 'Target'])
+    accuracy = accuracy_score(labels, scores)
+    precision = precision_score(labels, scores)
+    recall = recall_score(labels, scores)
+
+    logs = pd.DataFrame(
+        np.column_stack(
+            [
+                examples, 
+                ['Offense' if score else 'Not offense' for score in scores], 
+                ['Offense' if label else 'Not offense' for label in labels]
+            ]
+        ), 
+        columns=['Text', 'Predicted', 'Target']
+    )
+
     mean_loss = torch.stack(losses).mean().item()
 
-    return mean_loss, logs
+    return mean_loss, accuracy, precision, recall, logs

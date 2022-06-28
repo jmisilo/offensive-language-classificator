@@ -36,12 +36,15 @@ if __name__ == '__main__':
 
     for epoch in range(config.epochs):
         train_loss = train_epoch(model, train_loader, optimizer, scaler, scheduler, config, device)
-        valid_loss, valid_logs_frame = valid_epoch(model, valid_loader, device)
+        valid_loss, valid_acc, valid_prec, valid_recall, valid_logs_frame = valid_epoch(model, valid_loader, device)
 
         wandb.log({
             'loss/train': train_loss,
             'loss/valid': valid_loss,
+            'accuracy/valid': valid_acc,
+            'precision/valid': valid_prec,
+            'recall/valid': valid_recall,
             'table/valid': valid_logs_frame
         })
-        
+
         print(f'Epoch {epoch + 1}: train loss - {train_loss:.4f}, validation loss - {valid_loss:.4f}')

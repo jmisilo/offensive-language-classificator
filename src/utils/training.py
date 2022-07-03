@@ -29,8 +29,8 @@ def train_epoch(model, loader, optimizer, scaler, scheduler, config, device):
             scaler.step(optimizer)
             scaler.update()
 
-            optimizer.zero_grad()
             scheduler.step()
+            optimizer.zero_grad()
             loop.set_description(f'Loss: {loss.item():.4f}')
             loop.refresh()
 

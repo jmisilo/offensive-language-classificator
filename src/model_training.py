@@ -1,3 +1,4 @@
+import os
 import wandb
 import torch
 import torch.optim as optim
@@ -31,12 +32,21 @@ if __name__ == '__main__':
         num_training_steps=config.epochs * len(train_loader)
     )
 
-    wandb.init(reinit=True, config=config.__dict__)
-    wandb.watch(model)
+    wandb.init(project='offensive-language-classificator', reinit=True, config=config.__dict__)
+    wandb.watch(model, log='all')
 
     for epoch in range(config.epochs):
         train_loss = train_epoch(model, train_loader, optimizer, scaler, scheduler, config, device)
         valid_loss, valid_acc, valid_prec, valid_recall, valid_logs_frame = valid_epoch(model, valid_loader, device)
+
+        torch.save({
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'scaler_state_dict': scaler.state_dict(),
+                'scheduler_state_dict': scheduler.state_dict()
+            }, 
+            os.path.join('..', 'models', f'checkpoint-{epoch}.pt')
+        )
 
         wandb.log({
             'loss/train': train_loss,
@@ -48,3 +58,5 @@ if __name__ == '__main__':
         })
 
         print(f'Epoch {epoch + 1}: train loss - {train_loss:.4f}, validation loss - {valid_loss:.4f}')
+    
+    torch.save(model.state_dict(), os.path.join('..', 'models', 'model.pt'))

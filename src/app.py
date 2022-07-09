@@ -1,6 +1,7 @@
 import os
 import torch
 import uvicorn
+from typing import List
 from dotenv import dotenv_values
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -36,15 +37,40 @@ def root():
 class Post(BaseModel):
     text: str
 
+class Posts(BaseModel):
+    texts: List[str]
+
 @app.get('/predict')
-def predict(post: Post) -> str:
+def predict(post: Post):
 
     tokenized_text, attention_mask = text_pipeline([post.text])
-    prediction = model(input_ids=tokenized_text, attention_mask=attention_mask)
+    
+    tokenized_text = tokenized_text.to(device)
+    attention_mask = attention_mask.to(device)
+
+    model.eval()
+    with torch.no_grad():
+       prediction = model(input_ids=tokenized_text, attention_mask=attention_mask)
 
     return {
         'text': post.text, 
         'prediction': 'Offensive' if torch.argmax(prediction.logits).item() else 'Not Offensive'
+    }
+
+@app.get('/predictMany')
+def predict_many(posts: Posts):
+    tokenized_text, attention_mask = text_pipeline(posts.texts)
+
+    tokenized_text = tokenized_text.to(device)
+    attention_mask = attention_mask.to(device)
+
+    model.eval()
+    with torch.no_grad():
+       prediction = model(input_ids=tokenized_text, attention_mask=attention_mask)
+
+    return {
+        'texts': posts.texts, 
+        'predictions': ['Offensive' if pred else 'Not Offensive' for pred in torch.argmax(prediction.logits, dim=1)]
     }
 
 if __name__ == '__main__':

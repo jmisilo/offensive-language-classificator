@@ -30,7 +30,7 @@ uvicorn src.app:app --port <PORT>
 
 ## API documentation
 
-[Documentation]('/docs/api_docs.md')
+[Documentation]('docs/api_docs.md')
 
 ## Data
 

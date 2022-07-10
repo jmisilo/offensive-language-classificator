@@ -28,6 +28,10 @@ To run the following command:
 uvicorn src.app:app --port <PORT>
 ```
 
+## API documentation
+
+[Documentation]('/docs/api_docs.md')
+
 ## Data
 
 [Download Data](https://sites.google.com/site/offensevalsharedtask/olid)
